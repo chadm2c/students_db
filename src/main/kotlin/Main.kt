@@ -11,16 +11,18 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty
 
 data class Student(
-    @JsonProperty("id") val id : Int,
+    @JsonProperty("id") val id: Int,
     @JsonProperty("name") val name: String,
-    @JsonProperty("age") val age : Int,
-    @JsonProperty("faculty") val faculty : String
+    @JsonProperty("age") val age: Int,
+    @JsonProperty("faculty") val faculty: String
 )
+
 data class Students(
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "student")
     @JsonProperty("student") val students: List<Student>
 )
+
 fun main() {
     val xmlMapper = XmlMapper()
     val students: Students = xmlMapper.readValue(
@@ -32,21 +34,18 @@ fun main() {
     val user = "postgres"
     val password = "chadmany20"
 
-    try {
-        val connection: Connection = DriverManager.getConnection(url, user, password)
-        val sql = "INSERT INTO  student_info (id, name, age, faculty) VALUES (?, ?, ?, ?)"
-        val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
-
-        for (student in students.students) {
+    val connection: Connection = DriverManager.getConnection(url, user, password)
+    val sql = "INSERT INTO  student_info (id, name, age, faculty) VALUES (?, ?, ?, ?)"
+    val preparedStatement: PreparedStatement = connection.prepareStatement(sql)
+    connection.use {
+         students.students.forEach { student ->
             preparedStatement.setInt(1, student.id)
             preparedStatement.setString(2, student.name)
             preparedStatement.setInt(3, student.age)
-            preparedStatement.setString(4,student.faculty)
+            preparedStatement.setString(4, student.faculty)
             preparedStatement.executeUpdate()
         }
-
-        println("Students inserted successfully!")
-    } catch (e: SQLException) {
-        e.printStackTrace()
     }
+
+    println("Students inserted successfully!")
 }
